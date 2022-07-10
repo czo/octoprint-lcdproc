@@ -11,7 +11,7 @@ license: GPLv3
 # TODO
 date: today's date in format YYYY-MM-DD, e.g. 2015-04-21
 
-homepage: https://git.czo.hu/czo/octoprint-lcdproc/-/wikis/home
+homepage: https://git.czo.hu/czo/octoprint-lcdproc
 source: https://git.czo.hu/czo/octoprint-lcdproc
 archive: https://git.czo.hu/czo/octoprint-lcdproc/-/archive/main/octoprint-lcdproc-main.zip
 

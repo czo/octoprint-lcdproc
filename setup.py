@@ -27,7 +27,7 @@ plugin_author = "Jozsef CZOMPO"
 plugin_author_email = "czo@czo.hu"
 
 # The plugin's homepage URL. Can be overwritten within OctoPrint's internal data via __plugin_url__ in the plugin module
-plugin_url = "https://git.czo.hu/czo/octoprint-lcdproc/-/wikis/home"
+plugin_url = "https://git.czo.hu/czo/octoprint-lcdproc"
 
 # The plugin's license. Can be overwritten within OctoPrint's internal data via __plugin_license__ in the plugin module
 plugin_license = "GPLv3"
