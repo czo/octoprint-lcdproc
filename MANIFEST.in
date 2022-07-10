@@ -1,0 +1,4 @@
+include README.md
+recursive-include octoprint_lcdproc/templates *
+recursive-include octoprint_lcdproc/translations *
+recursive-include octoprint_lcdproc/static *
