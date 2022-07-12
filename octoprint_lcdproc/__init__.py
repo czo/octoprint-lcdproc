@@ -59,6 +59,7 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
 
                 "type": "jsondata",
                 "jsondata": "https://git.czo.hu/czo/octoprint-lcdproc/-/raw/main/softwareupdate.json?inline=false",
+                "current": self._plugin_version,
 
                 "method": "pip",
                 "pip": "https://git.czo.hu/czo/octoprintlcdproc/-/archive/{target}/octoprint-lcdproc-{target}.zip",
@@ -154,14 +155,6 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
         self.lcd.screens['OctPriSCR1'].add_icon_widget("IconFIN", x=self.lcd.server_info['screen_width'], y=2, name="SELECTOR_AT_LEFT" )
         self.lcd.screens['OctPriSCR1'].add_string_widget("TextETA", text="", y=2,x=2,)
         self.lcd.screens['OctPriSCR1'].add_string_widget("TextFIN", text="", y=2,x=self.lcd.server_info['screen_width']-2)
-
-# __plugin_name__ = "OctoPrint-LCDproc"
-# __plugin_version__ = "0.0.9"
-# __plugin_description__ = """LCDd/LCDproc support for status/progress reporting"""
-# __plugin_author__ = "Jozsef CZOMPO"
-# __plugin_author_email__ = "czo@czo.hu"
-# __plugin_url__ = "https://git.czo.hu/czo/octoprint-lcdproc"
-# __plugin_license__ = "GPLv3"
 
 # Set the Python version your plugin is compatible with below. Recommended is Python 3 only for all new plugins.
 __plugin_pythoncompat__ = ">=3.4,<4"
