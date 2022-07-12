@@ -36,8 +36,7 @@ class Server(object):
             "cell_height": int(bits[13])            
         })                
         return response  
-        
-                
+
     def request(self, command_string):
         
         """ Request """

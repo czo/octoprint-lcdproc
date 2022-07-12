@@ -1,0 +1,54 @@
+<h3>{{ _('LCDproc Settings') }}</h3>
+<div class="control-group">
+    <div class="controls">
+        <label class="control-label">{{ _('Host:') }}</label>
+        <input type="text" class="input-block-level" data-bind="value: settings.plugins.lcdproc.host">
+    </div>
+
+    <div class="controls">
+        <label class="control-label">{{ _('Port:') }}</label>
+        <input type="text" class="input-block-level" data-bind="value: settings.plugins.lcdproc.port">
+    </div>
+
+    <div class="controls">
+        <label class="control-label">{{ _('Hide screen when idle?') }}
+            <input type="checkbox" data-bind="checked: settings.plugins.lcdproc.hide_page_when_idle">
+        </label>
+    </div>
+
+    <div class="controls">
+        <label class="control-label">{{ _('Screen priority when printing:') }}</label>
+        <select class="input-block-level" data-bind="value: settings.plugins.lcdproc.priority_printing">
+            <option value="background">background</option>
+            <option value="info">info</option>
+            <option value="foreground">foreground</option>
+            <option value="alert">alert</option>
+        </select>
+    </div>
+
+    <div class="controls">
+        <label class="control-label">{{ _('Screen priority printing ended:') }}</label>
+        <select class="input-block-level" data-bind="value: settings.plugins.lcdproc.priority_non_printing">
+            <option value="background">background</option>
+            <option value="info">info</option>
+            <option value="foreground">foreground</option>
+            <option value="alert">alert</option>
+        </select>
+    </div>
+
+    <div class="controls">
+        <label class="control-label">{{ _('Idle time (minutes):') }}</label>
+        <input type="text" class="input-block-level" data-bind="value: settings.plugins.lcdproc.idle_time_minutes">
+    </div>
+
+    <div class="controls">
+        <label class="control-label">{{ _('Show "Title"?') }}
+            <input type="checkbox" data-bind="checked: settings.plugins.lcdproc.title_show">
+        </label>
+    </div>
+
+    <div class="controls">
+        <label class="control-label">{{ _('Title:') }}</label>
+        <input type="text" class="input-block-level" data-bind="value: settings.plugins.lcdproc.title_text">
+    </div>
+</div>
