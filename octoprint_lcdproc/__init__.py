@@ -11,7 +11,7 @@ from octoprint_lcdproc.lcdproc.server import Server
 from pprint import pprint
 from datetime import datetime, timedelta
 
-ETA_FORMAT="%H:%M:%S"
+ETA_FORMAT="%H:%M"
 FIN_FORMAT="%0%H:%M"
 
 class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
