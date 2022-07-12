@@ -1,13 +1,9 @@
 from __future__ import print_function
-import telnetlib
-try:
-    from urllib import unquote
-except ImportError:
-    from urllib.parse import unquote
+from urllib.parse import unquote
 import select
 
 from .screen import Screen
-
+from .pytelnetlib import telnetlib
 
 class Server(object):
     

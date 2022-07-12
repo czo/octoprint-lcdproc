@@ -11,14 +11,14 @@ plugin_package = "octoprint_lcdproc"
 
 # The plugin's human readable name. Can be overwritten within OctoPrint's internal data via __plugin_name__ in the
 # plugin module
-plugin_name = "OctoPrint-LCDproc"
+plugin_name = "LCDproc"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "1.0.0"
+plugin_version = "0.0.9"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
-plugin_description = """LCDproc support for status/progress reporting"""
+plugin_description = """LCDd/LCDproc support for status/progress reporting"""
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
 plugin_author = "Jozsef CZOMPO"
@@ -33,7 +33,7 @@ plugin_url = "https://git.czo.hu/czo/octoprint-lcdproc"
 plugin_license = "GPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = [ "lcdproc==0.3", ]
+plugin_requires = []
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point
@@ -61,7 +61,7 @@ plugin_ignored_packages = []
 #     additional_setup_parameters = {"dependency_links": ["https://github.com/someUser/someRepo/archive/master.zip#egg=someDependency-dev"]}
 # "python_requires": ">=3,<4" blocks installation on Python 2 systems, to prevent confused users and provide a helpful error. 
 # Remove it if you would like to support Python 2 as well as 3 (not recommended).
-additional_setup_parameters = {"python_requires": ">=3,<4"}
+additional_setup_parameters = {"python_requires": ">=3.4,<4"}
 
 ########################################################################################################################
 
