@@ -6,7 +6,8 @@
 
 This plugin will enable support for the [LCDd/LCDproc](http://lcdproc.omnipotent.net) supported displays.
 
-[ChangeLog](CHANGELOG.md)
+- [ChangeLog](CHANGELOG.md)
+- [Issue Tracker](https://github.com/czo/octoprint-lcdproc/issues)
 
 ## Screenshots
 
