@@ -1,6 +1,7 @@
 # OctoPrint-LCDproc
 
-**TODO:** Describe what your plugin does.
+This plugin will enable support for the old fashioned [LCDd/LCDproc](http://lcdproc.omnipotent.net) client-server architecture.
+
 
 ## Setup
 
