@@ -11,9 +11,9 @@ license: GPLv3
 # TODO
 date: today's date in format YYYY-MM-DD, e.g. 2015-04-21
 
-homepage: https://git.czo.hu/czo/octoprint-lcdproc
-source: https://git.czo.hu/czo/octoprint-lcdproc
-archive: https://git.czo.hu/czo/octoprint-lcdproc/-/archive/main/octoprint-lcdproc-main.zip
+homepage: https://github.com/czo/octoprint-lcdproc/
+source: https://github.com/czo/octoprint-lcdproc/
+archive: https://github.com/czo/octoprint-lcdproc/archive/refs/heads/main.zip
 
 # TODO
 # Set this to true if your plugin uses the dependency_links setup parameter to include

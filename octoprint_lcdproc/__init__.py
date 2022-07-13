@@ -62,11 +62,11 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
                 "current": self._plugin_version,
 
                 "type": "jsondata",
-                "jsondata": "https://git.czo.hu/czo/octoprint-lcdproc/-/raw/main/softwareupdate.json?inline=false",
+                "jsondata": "https://raw.githubusercontent.com/czo/octoprint-lcdproc/main/softwareupdate.json",
 
                 "method": "pip",
-                "pip": "https://git.czo.hu/czo/octoprint-lcdproc/-/archive/{target}/octoprint-lcdproc-{target}.zip",
-                "release_notes": "https://git.czo.hu/czo/octoprint-lcdproc/",
+                "pip": "https://github.com/czo/octoprint-lcdproc/archive/refs/tags/{target}.zip",
+                "release_notes": "https://github.com/czo/octoprint-lcdproc/blob/main/CHANGELOG.md",
             }
         }
 
