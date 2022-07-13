@@ -234,6 +234,8 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
     def on_print_progress(self, storage, path, progress ):
         self.printing_percent = progress
 
+        self.update_screen_TextPercent()
+
     def on_timer_seconds(self):
         try:
             self.printing_eta = self._printer.get_current_data()['progress']['printTimeLeft']
