@@ -9,11 +9,9 @@ from octoprint.util import RepeatedTimer, ResettableTimer, get_formatted_datetim
 
 from octoprint_lcdproc.lcdproc.server import Server
 
-ETA_FORMAT="%H:%M"
-FIN_FORMAT="%0%H:%M"
-
 STATE_NON_PRINTING = "non_printing"
 STATE_PRINTING = "printing"
+STATE_IDLE = "idle"
 
 class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
     octoprint.plugin.AssetPlugin,
@@ -27,10 +25,11 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
     lcd = None
     timer_screen = None
     timer_seconds = None
-    screen_priority_state = STATE_NON_PRINTING
+    screen_priority_state = STATE_IDLE
     start_timestamp = None
     printing_filename = None
     printing_percent = None
+    printing_eta = None
 
     ##~~ SettingsPlugin mixin
 
@@ -73,6 +72,7 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
 
     def get_settings_defaults(self):
         return {
+            "enabled": True,
             "host": "localhost",
             "port": 13666,
             "hide_page_when_idle": True,
@@ -92,8 +92,21 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
         ]
 
     def on_settings_save(self, data):
+        anything_changed = False
+        current_values = self.get_settings_defaults()
+        for key in self.get_settings_defaults().keys():
+            current_values[key] = self._settings.get([key])
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
-        self.lcd = None
+        for key in self.get_settings_defaults().keys():
+            if not current_values[key] == self._settings.get([key]):
+                anything_changed = True
+                break
+
+        if anything_changed:
+            self._logger.info("Configuration changed, destroying connection")
+            if self.lcd:
+                self.lcd.close_session()
+                self.lcd = None
 
     def on_startup(self, host, port):
         self.initialize_lcd()
@@ -105,32 +118,27 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
                 self.timer_screen = None
 
             if not self.timer_seconds:
-                self.timer_seconds = RepeatedTimer( 1.0, self.on_timer_seconds )
+                self.timer_seconds = RepeatedTimer( 15.0, self.on_timer_seconds )
 
             if event in [ Events.PRINT_STARTED, ]:
                 self.screen_priority_state = STATE_PRINTING
                 self.printing_filename = payload['name']
-                screen = self.ensure_screen('OctPriSCR1')
-                if screen and 'TextFileName' in screen.widgets:
-                    screen.widgets['TextFileName'].set_text( self.printing_filename )
-                    try:
-                        screen.widgets['TextFileName'].update()
-                        screen.set_priority( self._settings.get(["priority_printing"]) )
-                    except:
-                        self.lcd = None
                 self.start_timestamp = datetime.now()
+                self.update_screen_TextFileName()
+                self.update_screen_TextETA()
+                self.update_screen_TextPercent()
+                self.update_screen_TextFIN()
+
                 if not self.timer_seconds.is_alive():
                     self.timer_seconds.start()
 
+                self.update_screen_priority()
+
             if event in [ Events.PRINT_DONE, Events.PRINT_CANCELLED, Events.PRINT_FAILED, ]:
                 self.screen_priority_state = STATE_NON_PRINTING
-                screen = self.ensure_screen('OctPriSCR1')
-                if ( screen ):
-                    try:
-                        screen.set_priority( self._settings.get(["priority_non_printing"]) )
-                    except:
-                        self.lcd = None
                 self.start_timestamp = None
+                self.printing_eta = None
+                self.printing_percent = None
 
                 self.timer_seconds.cancel()
                 self.timer_seconds = None
@@ -139,76 +147,120 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
                     self.timer_screen = ResettableTimer( 60 * self._settings.get_int(["idle_time_minutes"]), self.on_timer_screen )
                     self.timer_screen.start()
 
+                self.update_screen_priority()
+
+    def update_screen_TextFileName(self):
+        if self.printing_filename is None:
+            visible_filename = " - "
+        else:
+            visible_filename = self.printing_filename
+
+        screen, screen_width, screen_height = self.ensure_screen('OctPriSCR1')
+        if screen and 'TextFileName' in screen.widgets:
+            self._logger.info("LCDd 'TextFileName' == '%s'" % visible_filename )
+            screen.widgets['TextFileName'].set_text( visible_filename )
+            screen.widgets['TextFileName'].update()
+
+    def update_screen_priority(self):
+        screen, screen_width, screen_height = self.ensure_screen('OctPriSCR1')
+        if screen:
+            if self.screen_priority_state == STATE_IDLE:
+                if self._settings.get_boolean(["hide_page_when_idle"]):
+                    self._logger.info("Switching screen priority: hidden")
+                    self.lcd.screens['OctPriSCR1'].set_priority("hidden")
+                else:
+                    self.screen_priority_state = STATE_NON_PRINTING
+
+            if self.screen_priority_state == STATE_NON_PRINTING:
+                new_priority = self._settings.get(["priority_non_printing"])
+                self._logger.info("Switching screen priority: %s" % new_priority )
+                self.lcd.screens['OctPriSCR1'].set_priority( new_priority )
+
+            if self.screen_priority_state == STATE_PRINTING:
+                new_priority = self._settings.get(["priority_printing"])
+                self._logger.info("Switching screen priority: %s" % new_priority )
+                self.lcd.screens['OctPriSCR1'].set_priority( new_priority )
+
+    def update_screen_TextPercent(self):
+        if self.printing_percent is None:
+            visible_percent = " - "
+        else:
+            visible_percent = "%d%%" % ( self.printing_percent )
+
+        screen, screen_width, screen_height = self.ensure_screen('OctPriSCR1')
+        if screen and 'TextPercent' in screen.widgets:
+            self._logger.info("LCDd 'TextPercent' == '%s'" % visible_percent )
+            screen.widgets['TextPercent'].set_text( visible_percent )
+            screen.widgets['TextPercent'].set_x( screen_width - ( len( visible_percent ) - 1 ) )
+            screen.widgets['TextPercent'].update()
+
+    def update_screen_TextETA( self ):
+        if self.printing_eta is None:
+            visible_eta = " - "
+        else:
+            # limiting display to 99 hour 60 minutes
+            eta_calcwith = self.printing_eta if self.printing_eta < 360000 else 360000 - 1
+            eta_hours = eta_calcwith // 3600
+            eta_minutes = ( eta_calcwith - ( eta_hours * 3600 ) ) // 60
+            visible_eta = "%02d:%02d" % ( eta_hours, eta_minutes )
+
+        screen, screen_width, screen_height = self.ensure_screen('OctPriSCR1')
+        if screen and 'TextETA' in screen.widgets:
+            self._logger.info("LCDd 'TextETA' == '%s'" % visible_eta )
+            screen.widgets['TextETA'].set_text( visible_eta )
+            screen.widgets['TextETA'].update()
+
+    def update_screen_TextFIN( self ):
+        if self.printing_eta is None or self.start_timestamp is None:
+            visible_fin = " - "
+        else:
+            FINISH_DATETIME = datetime.now() + timedelta( seconds = self.printing_eta )
+            START_DATE = self.start_timestamp.replace(hour=0, minute=0, second=0, microsecond=0)
+            FIN_DATE = FINISH_DATETIME.replace(hour=0, minute=0, second=0, microsecond=0)
+
+            if ( (FIN_DATE-START_DATE).days == 0 ):
+                visible_fin = "%02d:%02d" % ( FINISH_DATETIME.hour, FINISH_DATETIME.minute )
+            else:
+                visible_fin = "+%dd %02d:%02d" % ( (FIN_DATE-START_DATE).days, FINISH_DATETIME.hour, FINISH_DATETIME.minute )
+
+        screen, screen_width, screen_height = self.ensure_screen('OctPriSCR1')
+        if screen and 'TextFIN' in screen.widgets:
+            self._logger.info("LCDd 'TextFIN' == '%s'" % visible_fin )
+            screen.widgets['TextFIN'].set_text( visible_fin )
+            screen.widgets['TextFIN'].set_x( screen_width - len( visible_fin ) )
+            screen.widgets['TextFIN'].update()
+
+
     def on_print_progress(self, storage, path, progress ):
         self.printing_percent = progress
 
     def on_timer_seconds(self):
         try:
-            ETA_SECONDS = self._printer.get_current_data()['progress']['printTimeLeft']
+            self.printing_eta = self._printer.get_current_data()['progress']['printTimeLeft']
         except:
-            ETA_SECONDS = None
+            self.printing_eta = None
 
-        screen = self.ensure_screen('OctPriSCR1')
-
-        if screen and 'TextPercent' in screen.widgets:
-            visible_percent = "%d%%" % ( self.printing_percent )
-            screen.widgets['TextPercent'].set_text( visible_percent )
-            screen.widgets['TextPercent'].set_x( self.lcd.server_info['screen_width'] - ( len( visible_percent ) - 1 ) )
-            try:
-                screen.widgets['TextPercent'].update()
-            except:
-                self.lcd = None
-                return
-
-        if ETA_SECONDS is not None and self.start_timestamp:
-            # ETA
-            CURRENT_ETA_FORMAT = ETA_FORMAT
-            FINISH_DATETIME_CUT = datetime(1,1,1,0,0,0,0) + timedelta( seconds = ETA_SECONDS if ETA_SECONDS < 360000 else 360000 )
-            if screen and 'TextETA' in screen.widgets:
-                screen.widgets['TextETA'].set_text( FINISH_DATETIME_CUT.strftime(CURRENT_ETA_FORMAT) )
-                try:
-                    screen.widgets['TextETA'].update()
-                except:
-                    self.lcd = None
-                    return
-
-            # FIN
-            CURRENT_FIN_FORMAT = FIN_FORMAT
-            FINISH_DATETIME = datetime.now() + timedelta( seconds = ETA_SECONDS )
-
-            START_DATE = self.start_timestamp.replace(hour=0, minute=0, second=0, microsecond=0)
-            FIN_DATE = FINISH_DATETIME.replace(hour=0, minute=0, second=0, microsecond=0)
-
-            if "%0" in CURRENT_FIN_FORMAT:
-                if ( (FIN_DATE-START_DATE).days == 0 ):
-                    CURRENT_FIN_FORMAT = CURRENT_FIN_FORMAT.replace("%0", "" )
-                else:
-                    EXTRA_DAYS = "+%d " % ( (FIN_DATE-START_DATE).days )
-                    CURRENT_FIN_FORMAT = CURRENT_FIN_FORMAT.replace("%0", EXTRA_DAYS )
-
-            CURRENT_FIN_TEXT = FINISH_DATETIME.strftime(CURRENT_FIN_FORMAT)
-            if screen and 'TextFIN' in screen.widgets:
-                screen.widgets['TextFIN'].set_text( CURRENT_FIN_TEXT )
-                screen.widgets['TextFIN'].set_x( self.lcd.server_info['screen_width'] - len( CURRENT_FIN_TEXT ) )
-                try:
-                    screen.widgets['TextFIN'].update()
-                except:
-                    self.lcd = None
-                    return
+        self.update_screen_TextPercent()
+        self.update_screen_TextETA()
+        self.update_screen_TextFIN()
 
     def on_timer_screen(self):
         self.timer_screen = None
-        if self._settings.get_boolean(["hide_page_when_idle"]):
-            screen = self.ensure_screen('OctPriSCR1')
-            if ( screen ):
-                screen.set_priority("hidden")
+        self.screen_priority_state = STATE_IDLE
+        self.update_screen_priority()
 
     def initialize_lcd(self):
+        if not self._settings.get_boolean(["enabled"]):
+            self.lcd = None
+            self._logger.info("Connection to LCDd are disabled")
+            return False
+
         try:
             self.lcd = Server(hostname=self._settings.get(["host"]), port=self._settings.get_int(["port"]), debug=False)
             self.lcd.start_session()
         except:
             self.lcd = None
+            self._logger.info("Unable to establish the connection to the LCDd")
             return False
 
         self.lcd.add_screen("OctPriSCR1")
@@ -221,33 +273,33 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
             first_linenum = 1
             self.lcd.screens['OctPriSCR1'].set_heartbeat("off")
 
-        if self.screen_priority_state == STATE_NON_PRINTING:
-            if self._settings.get_boolean(["hide_page_when_idle"]):
-                self.lcd.screens['OctPriSCR1'].set_priority("hidden")
-            else:
-                self.lcd.screens['OctPriSCR1'].set_priority( self._settings.get(["priority_non_printing"]) )
-
-        if self.screen_priority_state == STATE_PRINTING:
-            self.lcd.screens['OctPriSCR1'].set_priority( self._settings.get(["priority_printing"]) )
+        self.update_screen_priority()
 
         self.lcd.screens['OctPriSCR1'].add_string_widget("TextPercent", text="", y= first_linenum+0, x=self.lcd.server_info['screen_width']-3 )
-        self.lcd.screens['OctPriSCR1'].add_scroller_widget("TextFileName", text=self.printing_filename if self.printing_filename else "", speed=5, left=1, top=first_linenum+0, right=self.lcd.server_info['screen_width']-5, bottom=first_linenum+0 )
+        self.lcd.screens['OctPriSCR1'].add_scroller_widget("TextFileName", text="", speed=5, left=1, top=first_linenum+0, right=self.lcd.server_info['screen_width']-5, bottom=first_linenum+0 )
         self.lcd.screens['OctPriSCR1'].add_string_widget("TextETA", text="", y=first_linenum+1,x=2,)
         self.lcd.screens['OctPriSCR1'].add_string_widget("TextFIN", text="", y=first_linenum+1,x=self.lcd.server_info['screen_width']-2)
         self.lcd.screens['OctPriSCR1'].add_icon_widget("IconETA", x=1, y=first_linenum+1, name="SELECTOR_AT_RIGHT" )
         self.lcd.screens['OctPriSCR1'].add_icon_widget("IconFIN", x=self.lcd.server_info['screen_width'], y=first_linenum+1, name="SELECTOR_AT_LEFT" )
 
+        self._logger.info("LCDd connection established")
+
+        self.update_screen_TextFileName()
+        self.update_screen_TextPercent()
+        self.update_screen_TextETA()
+        self.update_screen_TextFIN()
+
         return True
 
     def ensure_screen(self, ref):
-        if not self.lcd:
+        if not self.lcd or not self.lcd.alive_session():
             if not self.initialize_lcd():
-                return None
+                return ( None, None, None )
 
-        if self.lcd and ref in self.lcd.screens:
-            return self.lcd.screens[ref]
+        if self.lcd and self.lcd.alive_session() and ref in self.lcd.screens:
+            return ( self.lcd.screens[ref], self.lcd.server_info['screen_width'], self.lcd.server_info['screen_height'] )
 
-        return None
+        return ( None, None, None )
 
 __plugin_name__ = "LCDproc"
 
