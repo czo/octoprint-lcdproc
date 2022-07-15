@@ -1,7 +1,5 @@
 # OctoPrint-LCDproc
 
-[[_TOC_]]
-
 ## About
 
 This plugin will enable support for the [LCDd/LCDproc](http://lcdproc.omnipotent.net) supported displays.
@@ -13,6 +11,7 @@ This plugin will enable support for the [LCDd/LCDproc](http://lcdproc.omnipotent
 
 [<img src="blob/gLCD-without_title.png" width="250"/>](blob/gLCD-without_title.png)|[<img src="blob/gLCD-with_title.png" width="250"/>](blob/gLCD-with_title.png)
 :--:|:--:
+[<img src="blob/HW-24x2-LCD.jpeg" width="250"/>](blob/HW-24x2-LCD.jpeg)|
 
 ## Setup
 
