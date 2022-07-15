@@ -11,7 +11,7 @@ This plugin will enable support for the [LCDd/LCDproc](http://lcdproc.omnipotent
 
 [<img src="blob/gLCD-without_title.png" width="250"/>](blob/gLCD-without_title.png)|[<img src="blob/gLCD-with_title.png" width="250"/>](blob/gLCD-with_title.png)
 :--:|:--:
-[<img src="blob/HW-24x2-LCD.jpeg" width="250"/>](blob/HW-24x2-LCD.jpeg)|
+[<img src="blob/HW-24x2-LCD.jpeg" width="250"/>](blob/HW-24x2-LCD.jpeg)|[<img src="blob/settings_page.png" width="250"/>](blob/settings_page.png)
 
 ## Setup
 
