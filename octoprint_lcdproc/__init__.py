@@ -262,7 +262,7 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
             self.lcd.start_session()
         except:
             self.lcd = None
-            self._logger.info("Unable to establish the connection to the LCDd")
+            self._logger.exception("Unable to establish the connection to the LCDd")
             return False
 
         self.lcd.add_screen("OctPriSCR1")
