@@ -17,7 +17,7 @@ This plugin will enable support for the [LCDd/LCDproc](http://lcdproc.omnipotent
 
 Install manually using this URL ([Plugin Manager](https://docs.octoprint.org/en/master/bundledplugins/pluginmanager.html) will be available later):
 
-    https://github.com/czo/octoprint-lcdproc/archive/refs/tags/0.1.1.zip
+    https://github.com/czo/octoprint-lcdproc/archive/refs/tags/0.1.2.zip
 
 or for the current, development version:
 

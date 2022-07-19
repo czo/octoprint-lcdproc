@@ -2,8 +2,11 @@
 
 All major changes will be documented here.
 
-## [0.1.2] - WP
+## [0.1.3] - WP
 - not yet known
+
+## [0.1.2] - 2022-07-19
+- Python 2.7 compatibility fix 
 
 ## [0.1.1] - 2022-07-13
 - moving code to github from my private gitlab
