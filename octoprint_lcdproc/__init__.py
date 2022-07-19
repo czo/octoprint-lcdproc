@@ -306,7 +306,7 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
 __plugin_name__ = "LCDproc"
 
 # Set the Python version your plugin is compatible with below. Recommended is Python 3 only for all new plugins.
-__plugin_pythoncompat__ = ">=3.4,<4"
+__plugin_pythoncompat__ = ">=3.7,<4"
 
 def __plugin_load__():
     global __plugin_implementation__
