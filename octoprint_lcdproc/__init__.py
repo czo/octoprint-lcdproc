@@ -211,17 +211,17 @@ class LcdprocPlugin(octoprint.plugin.SettingsPlugin,
             screen.widgets['TextETA'].update()
 
     def update_screen_TextFIN( self ):
-        if self.printing_eta is None or self.start_timestamp is None:
+        if self.printing_eta is None:
             visible_fin = " - "
         else:
             FINISH_DATETIME = datetime.now() + timedelta( seconds = self.printing_eta )
-            START_DATE = self.start_timestamp.replace(hour=0, minute=0, second=0, microsecond=0)
+            NOW_DATE = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             FIN_DATE = FINISH_DATETIME.replace(hour=0, minute=0, second=0, microsecond=0)
 
-            if ( (FIN_DATE-START_DATE).days == 0 ):
+            if ( (FIN_DATE-NOW_DATE).days < 1 ):
                 visible_fin = "%02d:%02d" % ( FINISH_DATETIME.hour, FINISH_DATETIME.minute )
             else:
-                visible_fin = "+%dd %02d:%02d" % ( (FIN_DATE-START_DATE).days, FINISH_DATETIME.hour, FINISH_DATETIME.minute )
+                visible_fin = "+%dd %02d:%02d" % ( (FIN_DATE-NOW_DATE).days, FINISH_DATETIME.hour, FINISH_DATETIME.minute )
 
         screen, screen_width, screen_height = self.ensure_screen('OctPriSCR1')
         if screen and 'TextFIN' in screen.widgets:
